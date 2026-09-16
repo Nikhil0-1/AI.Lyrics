@@ -1,0 +1,120 @@
+import { TypographyPreset } from '../../types/typography';
+
+export const TYPOGRAPHY_PRESETS: Record<string, TypographyPreset> = {
+  modernSans: {
+    id: 'modernSans',
+    name: 'Modern Sans',
+    category: 'Modern Sans',
+    fontFamily: 'Inter, sans-serif',
+    fontWeight: 700,
+    letterSpacing: -0.5,
+    lineHeight: 1.2,
+    fillColor: '#FFFFFF',
+    shadowColor: 'rgba(0, 0, 0, 0.7)',
+    shadowBlur: 12
+  },
+  cinematic: {
+    id: 'cinematic',
+    name: 'Cinematic Gold',
+    category: 'Cinematic',
+    fontFamily: 'Cinzel, serif',
+    fontWeight: 700,
+    letterSpacing: 4,
+    lineHeight: 1.3,
+    textTransform: 'uppercase',
+    fillColor: '#F6E05E',
+    shadowColor: 'rgba(0, 0, 0, 0.9)',
+    shadowBlur: 20,
+    glowColor: 'rgba(246, 224, 94, 0.4)',
+    glowIntensity: 0.6
+  },
+  boldDisplay: {
+    id: 'boldDisplay',
+    name: 'Impact Heavy',
+    category: 'Bold Display',
+    fontFamily: 'Montserrat, sans-serif',
+    fontWeight: 900,
+    letterSpacing: -1,
+    lineHeight: 1.1,
+    textTransform: 'uppercase',
+    fillColor: '#FFFFFF',
+    outlineColor: '#000000',
+    outlineWidth: 4,
+    shadowColor: 'rgba(0,0,0,0.8)',
+    shadowBlur: 10
+  },
+  condensed: {
+    id: 'condensed',
+    name: 'Street Condensed',
+    category: 'Condensed',
+    fontFamily: 'Bebas Neue, sans-serif',
+    fontWeight: 800,
+    letterSpacing: 2,
+    lineHeight: 1.05,
+    textTransform: 'uppercase',
+    fillColor: '#FFFFFF',
+    shadowColor: 'rgba(0,0,0,0.85)',
+    shadowBlur: 15
+  },
+  neonCyber: {
+    id: 'neonCyber',
+    name: 'Neon Cyberpunk',
+    category: 'Neon',
+    fontFamily: 'Syne, sans-serif',
+    fontWeight: 800,
+    letterSpacing: 1,
+    lineHeight: 1.15,
+    fillColor: '#22D3EE',
+    outlineColor: '#0891B2',
+    outlineWidth: 2,
+    glowColor: '#06B6D4',
+    glowIntensity: 0.9,
+    shadowColor: 'rgba(6, 182, 212, 0.8)',
+    shadowBlur: 25
+  },
+  emotionalSerif: {
+    id: 'emotionalSerif',
+    name: 'Poetic Serif',
+    category: 'Emotional',
+    fontFamily: 'Playfair Display, serif',
+    fontWeight: 600,
+    letterSpacing: 1,
+    lineHeight: 1.35,
+    fillColor: '#F8FAFC',
+    shadowColor: 'rgba(0, 0, 0, 0.6)',
+    shadowBlur: 10
+  },
+  rapHype: {
+    id: 'rapHype',
+    name: 'Trap Hype',
+    category: 'Rap',
+    fontFamily: 'Montserrat, sans-serif',
+    fontWeight: 900,
+    letterSpacing: -0.5,
+    lineHeight: 1.05,
+    textTransform: 'uppercase',
+    fillColor: '#FACC15',
+    outlineColor: '#000000',
+    outlineWidth: 5,
+    shadowColor: 'rgba(0, 0, 0, 0.9)',
+    shadowBlur: 14
+  },
+  youtubeDynamic: {
+    id: 'youtubeDynamic',
+    name: 'YouTube Dynamic',
+    category: 'YouTube Dynamic',
+    fontFamily: 'Outfit, sans-serif',
+    fontWeight: 800,
+    letterSpacing: 0,
+    lineHeight: 1.15,
+    fillColor: '#FFFFFF',
+    outlineColor: '#0F172A',
+    outlineWidth: 3,
+    glowColor: 'rgba(99, 102, 241, 0.5)',
+    glowIntensity: 0.7,
+    shadowColor: 'rgba(0, 0, 0, 0.8)',
+    shadowBlur: 16
+  }
+};
+
+export const TYPOGRAPHY_LIST = Object.values(TYPOGRAPHY_PRESETS);
