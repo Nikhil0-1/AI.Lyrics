@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useProject } from '../../../context/ProjectContext';
 import { LyricLine } from '../../../types/lyrics';
 
@@ -22,30 +22,49 @@ export const LyricsTrack: React.FC<{
     initialEnd: number;
   } | null>(null);
 
-  const handleMouseDown = (
-    e: React.MouseEvent,
+  const startDrag = (
+    clientX: number,
     line: LyricLine,
     type: 'move' | 'resize-left' | 'resize-right'
   ) => {
-    e.stopPropagation();
     setSelectedLineId(line.id);
     seek(line.start);
 
     setDragging({
       lineId: line.id,
       type,
-      startX: e.clientX,
+      startX: clientX,
       initialStart: line.start,
       initialEnd: line.end
     });
   };
 
-  // Global mouse move & mouse up for smooth dragging across canvas/timeline
-  React.useEffect(() => {
+  const handleMouseDown = (
+    e: React.MouseEvent,
+    line: LyricLine,
+    type: 'move' | 'resize-left' | 'resize-right'
+  ) => {
+    e.stopPropagation();
+    startDrag(e.clientX, line, type);
+  };
+
+  const handleTouchStart = (
+    e: React.TouchEvent,
+    line: LyricLine,
+    type: 'move' | 'resize-left' | 'resize-right'
+  ) => {
+    e.stopPropagation();
+    if (e.touches && e.touches[0]) {
+      startDrag(e.touches[0].clientX, line, type);
+    }
+  };
+
+  // Global mouse & touch move / up listeners
+  useEffect(() => {
     if (!dragging) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const deltaX = e.clientX - dragging.startX;
+    const onMove = (clientX: number) => {
+      const deltaX = clientX - dragging.startX;
       const deltaTime = (deltaX / totalWidth) * duration;
 
       if (dragging.type === 'move') {
@@ -62,15 +81,25 @@ export const LyricsTrack: React.FC<{
       }
     };
 
-    const handleMouseUp = () => {
-      setDragging(null);
+    const handleMouseMove = (e: MouseEvent) => onMove(e.clientX);
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches && e.touches[0]) {
+        onMove(e.touches[0].clientX);
+      }
     };
 
+    const handleEnd = () => setDragging(null);
+
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleEnd);
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleEnd);
     };
   }, [dragging, totalWidth, duration, updateLine]);
 
@@ -83,44 +112,51 @@ export const LyricsTrack: React.FC<{
       {project.lyrics.map((line) => {
         const startX = (line.start / duration) * totalWidth;
         const endX = (line.end / duration) * totalWidth;
-        const width = Math.max(28, endX - startX);
+        const width = Math.max(34, endX - startX);
         const isSelected = line.id === selectedLineId;
 
         return (
           <div
             key={line.id}
             onMouseDown={(e) => handleMouseDown(e, line, 'move')}
+            onTouchStart={(e) => handleTouchStart(e, line, 'move')}
             style={{
               left: `${startX}px`,
               width: `${width}px`
             }}
-            className={`absolute top-4 h-10 rounded-lg border flex items-center justify-between px-2 cursor-grab active:cursor-grabbing transition-colors shadow-sm select-none ${
+            className={`absolute top-4 h-10 rounded-lg border flex items-center justify-between px-2 cursor-grab active:cursor-grabbing transition-colors shadow-sm select-none touch-none ${
               isSelected
                 ? 'bg-indigo-600/30 border-indigo-400 text-white ring-1 ring-indigo-400'
                 : 'bg-studio-800/80 border-studio-700 text-slate-200 hover:border-slate-500 hover:bg-studio-800'
             }`}
           >
-            {/* Left Resize Handle */}
+            {/* Left Resize Handle with expanded touch target */}
             <div
               onMouseDown={(e) => handleMouseDown(e, line, 'resize-left')}
-              className="absolute left-0 top-0 bottom-0 w-2 hover:bg-indigo-500/80 rounded-l cursor-ew-resize"
+              onTouchStart={(e) => handleTouchStart(e, line, 'resize-left')}
+              className="absolute left-0 top-0 bottom-0 w-3.5 hover:bg-indigo-500/80 rounded-l cursor-ew-resize flex items-center justify-center -ml-1 touch-none"
               title="Drag to adjust start time"
-            />
+            >
+              <div className="w-1 h-4 bg-slate-400/50 rounded-full" />
+            </div>
 
             {/* Line Content */}
-            <div className="flex-1 overflow-hidden px-1">
+            <div className="flex-1 overflow-hidden px-1.5 pointer-events-none">
               <p className="text-[11px] font-bold truncate leading-tight">{line.text}</p>
               <span className="text-[9px] font-mono text-slate-400 truncate block">
                 {line.style.animationPreset || 'smoothReveal'}
               </span>
             </div>
 
-            {/* Right Resize Handle */}
+            {/* Right Resize Handle with expanded touch target */}
             <div
               onMouseDown={(e) => handleMouseDown(e, line, 'resize-right')}
-              className="absolute right-0 top-0 bottom-0 w-2 hover:bg-indigo-500/80 rounded-r cursor-ew-resize"
+              onTouchStart={(e) => handleTouchStart(e, line, 'resize-right')}
+              className="absolute right-0 top-0 bottom-0 w-3.5 hover:bg-indigo-500/80 rounded-r cursor-ew-resize flex items-center justify-center -mr-1 touch-none"
               title="Drag to adjust end time"
-            />
+            >
+              <div className="w-1 h-4 bg-slate-400/50 rounded-full" />
+            </div>
           </div>
         );
       })}

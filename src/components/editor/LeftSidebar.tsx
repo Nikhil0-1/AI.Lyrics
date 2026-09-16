@@ -80,7 +80,7 @@ export const LeftSidebar: React.FC<{
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabType)}
+              onClick={() => setActiveTab(tab.id as SidebarTabType)}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
                 isActive
                   ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-500/30'
