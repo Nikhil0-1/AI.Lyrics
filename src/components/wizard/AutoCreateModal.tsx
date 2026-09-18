@@ -45,6 +45,7 @@ export const AutoCreateModal: React.FC<{
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [language, setLanguage] = useState('Auto-detect');
+  const [customLyrics, setCustomLyrics] = useState('');
 
   // Pipeline processing state
   const [isProcessing, setIsProcessing] = useState(false);
@@ -139,7 +140,9 @@ export const AutoCreateModal: React.FC<{
           sampleId,
           audioUrl,
           fileName,
-          language
+          language,
+          duration,
+          customLyrics: customLyrics.trim() || undefined
         })
       });
 
@@ -392,6 +395,25 @@ export const AutoCreateModal: React.FC<{
                   <option value="Bengali">Bengali</option>
                   <option value="Marathi">Marathi</option>
                 </select>
+              </div>
+
+              {/* Optional Custom Lyrics Input */}
+              <div className="p-3.5 bg-studio-850/60 border border-studio-800 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-200">✍️ Paste Song Lyrics (Optional)</p>
+                    <p className="text-[11px] text-slate-400">
+                      If you have the lyrics, paste them here. Our AI will automatically align them with accurate word timestamps. Or leave blank to auto-detect!
+                    </p>
+                  </div>
+                </div>
+                <textarea
+                  rows={3}
+                  value={customLyrics}
+                  onChange={(e) => setCustomLyrics(e.target.value)}
+                  placeholder="e.g.&#10;Teri aankhon mein khoya rahoon&#10;Har pal tujhko hi chahta rahoon&#10;Yeh ishq hai tera meri jaan"
+                  className="w-full bg-studio-900 border border-studio-700/80 rounded-lg p-2.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500 resize-none font-sans"
+                />
               </div>
             </>
           ) : (

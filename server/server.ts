@@ -120,32 +120,76 @@ app.post('/api/analyze', (req, res) => {
   }
 });
 
+// Bulletproof audio path resolver for uploads, samples, or custom files
+function resolveAudioFilePath(audioUrl: string): string {
+  if (!audioUrl) return '';
+  const clean = audioUrl.replace(/^\//, '');
+  
+  // 1. Direct match in uploadsDir
+  const fileName = path.basename(clean);
+  const inUploads = path.join(uploadsDir, fileName);
+  if (fs.existsSync(inUploads)) return inUploads;
+
+  // 2. Direct match in server/uploads
+  const inServerUploads = path.join(__dirname, clean);
+  if (fs.existsSync(inServerUploads)) return inServerUploads;
+
+  // 3. Match in public/samples or public
+  const inPublic = path.join(__dirname, '../public', clean);
+  if (fs.existsSync(inPublic)) return inPublic;
+
+  // 4. Project root
+  const inRoot = path.join(__dirname, '..', clean);
+  if (fs.existsSync(inRoot)) return inRoot;
+
+  return inUploads;
+}
+
 // POST /api/transcribe
 app.post('/api/transcribe', async (req, res) => {
   try {
-    const { sampleId, audioUrl, fileName = 'song.mp3', language = 'Auto-detect', provider = 'auto' } = req.body;
+    const {
+      sampleId,
+      audioUrl,
+      fileName = 'song.mp3',
+      language = 'Auto-detect',
+      provider = 'auto',
+      customLyrics,
+      duration: clientDuration
+    } = req.body;
 
     let result;
 
     // 1. If sample song was selected
-    if (sampleId && SAMPLE_SONGS[sampleId]) {
+    if (sampleId && SAMPLE_SONGS[sampleId] && (!customLyrics || !customLyrics.trim())) {
       result = SAMPLE_SONGS[sampleId].data;
     } else {
-      // 2. Select provider based on preference & environment
       let selectedProvider = new LocalSTTProvider();
       if (provider === 'cloud' || process.env.WHISPER_API_KEY || process.env.GROQ_API_KEY) {
         selectedProvider = new CloudWhisperProvider() as any;
       }
 
       let audioBuffer = Buffer.alloc(0);
+      let detectedDuration = clientDuration || 30.0;
+
       if (audioUrl) {
-        const localPath = path.join(__dirname, '..', audioUrl.replace(/^\//, ''));
+        const localPath = resolveAudioFilePath(audioUrl);
         if (fs.existsSync(localPath)) {
           audioBuffer = fs.readFileSync(localPath);
+          try {
+            const exactDur = await FFmpegService.getDuration(localPath);
+            if (exactDur > 0) detectedDuration = exactDur;
+          } catch (e) {
+            // keep detectedDuration
+          }
         }
       }
 
-      result = await selectedProvider.transcribe(audioBuffer, fileName, { language });
+      result = await selectedProvider.transcribe(audioBuffer, fileName, {
+        language,
+        duration: detectedDuration,
+        customLyrics
+      });
     }
 
     res.json({
@@ -180,9 +224,9 @@ app.post('/api/export', async (req, res) => {
     const duration = project?.audio?.duration || 20;
 
     const audioSource = project?.audio?.sourceUrl || '/samples/hindi-romantic.mp3';
-    let audioFilePath = path.join(__dirname, '..', audioSource.replace(/^\//, ''));
+    let audioFilePath = resolveAudioFilePath(audioSource);
     if (!fs.existsSync(audioFilePath)) {
-      audioFilePath = path.join(__dirname, '../public', audioSource.replace(/^\//, ''));
+      audioFilePath = path.join(__dirname, '../public/samples/hindi-romantic.mp3');
     }
 
     const outputFileName = `export_${Date.now()}_${width}x${height}.mp4`;

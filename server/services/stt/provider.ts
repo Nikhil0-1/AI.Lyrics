@@ -29,6 +29,6 @@ export interface SpeechToTextProvider {
   transcribe(
     audioBuffer: Buffer,
     fileName: string,
-    options?: { language?: string; apiKey?: string }
+    options?: { language?: string; apiKey?: string; duration?: number; customLyrics?: string }
   ): Promise<STTResult>;
 }
